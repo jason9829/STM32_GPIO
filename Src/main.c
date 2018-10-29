@@ -61,6 +61,136 @@ static void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN 0 */
 
+// GPIO mode is in bit 0 and 1
+typedef enum{
+	GPIO_INPUT = 0,
+	GPIO_OUTPUT,
+	GPIO_ALT_FUNC,
+	GPIO_ANALOG
+}	GpioMode;
+
+// GPIO output driver type is in bit 2
+typedef enum{
+	GPIO_PUSH_PULL = 0,
+	GPIO_OPEN_DRAIN = 1 << 2,	// use bit 3 bcz bit 1 and bit 2 used in GpioMode
+}	GpioDriverType;
+
+// GPIO output speed is in bits 3 and 4
+typedef enum{
+	GPIO_LOW_SPEED = 0,
+	GPIO_MED_SPEED = 1 << 3,
+	GPIO_HI_SPEED = 2 << 3,
+	GPIO_VERY_HI_SPEED = 3 << 3,
+}	GpioOutputSpeed;
+
+// GPIO pull type is in bits 5 and 6
+typedef enum{
+	GPIO_NO_PULL = 0,
+	GPIO_PULL_UP = 1 << 5,
+	GPIO_PULL_DOWN = 2 << 5,
+}	GpioPullType;
+
+typedef enum{
+	GPIOPin0  = 0x0001,
+	GPIOPin1  = 0x0002,
+	GPIOPin2  = 0x0004,
+	GPIOPin3  = 0x0008,
+	GPIOPin4  = 0x0010,
+	GPIOPin5  = 0x0020,
+	GPIOPin6  = 0x0040,
+	GPIOPin7  = 0x0080,
+	GPIOPin8  = 0x0100,
+	GPIOPin9  = 0x0200,
+	GPIOPin10 = 0x0400,
+	GPIOPin11 = 0x0800,
+	GPIOPin12 = 0x1000,
+	GPIOPin13 = 0x2000,
+	GPIOPin14 = 0x4000,
+	GPIOPin15 = 0x8000,
+}	GPIOPin;
+
+typedef volatile uint32_t IORegister ;
+
+typedef struct GPIORegs GPIORegs;
+struct GPIORegs {
+	IORegister mode;
+	IORegister driverType;
+	IORegister outSpeed;
+	IORegister pullType;
+	IORegister inData;
+	IORegister outData;
+	IORegister outBits;
+	IORegister pinLock;
+	IORegister altFuncLow;
+	IORegister altFuncHi;
+};
+
+#define GPIOA	((GPIORegs *)0x40020000)
+#define GPIOB	((GPIORegs *)0x40020400)
+#define GPIOC	((GPIORegs *)0x40020800)
+#define GPIOD	((GPIORegs *)0x40020c00)
+#define GPIOE	((GPIORegs *)0x40021000)
+#define GPIOF	((GPIORegs *)0x40021400)
+#define GPIOG	((GPIORegs *)0x40021800)
+#define GPIOH	((GPIORegs *)0x40021c00)
+#define GPIOI	((GPIORegs *)0x40022000)
+#define GPIOJ	((GPIORegs *)0x40022400)
+#define GPIOK	((GPIORegs *)0x40022800)
+
+/* *
+ * To configure the GPIO pin.
+ *
+ * Input:
+ * 	 port			the port to configure
+ * 	 pin			the pin to configure
+ * 	 configuration	the configuration setting for the pin
+ *	 	 	 	 	[1:0] Mode
+ *	 	 	 	 	[2:2] Output type
+ *	 	 	 	 	[4:3] Output speed
+ *	 	 	 	 	[6:5] Pull type
+ *
+ * 	 E.g. :
+ * 	 	gpioConfigurePin (GPIOA, GPIOPin0, GPIO_OUTPUT | 		\
+ * 	 									   GPIO_OPEN_DRAIN |	\
+ * 	 									   GPIO_HI_SPEED|		\
+ * 	 									   GPIO_NO_PULL);
+ * */
+
+void GPIOConfigurePin(GPIORegs *port, GPIOPin pins, int configuration){
+	uint32_t i, pinMask, tempMask;
+	uint32_t mode;
+	uint32_t driver;
+	uint32_t outSpeed;
+	uint32_t pullType;
+
+	pinMask = 0x1;
+	mode = configuration & 0x3;
+	driver = (configuration & 0x4) >> 2;
+	outSpeed = (configuration & 0x18) >> 3;
+	pullType = (configuration & 0x60) >> 5;
+
+	for(i = 0; i <16 ; i++){
+		tempMask = pinMask & pins;
+		if(tempMask == 1){
+			port->mode &= ~(3 << (i * 2));
+			port->mode |= mode << (i * 2);
+
+			port->driverType &= ~(1 << (i * 1)) ;
+			port->driverType |= driver << (i * 1);;
+
+			port->outSpeed &= ~(3 << (i * 2));
+			port->outSpeed |= outSpeed  << (i * 2);
+
+			port->pullType &= ~(3 << (i * 2));
+			port->pullType |= pullType << (i * 2);
+
+		}
+		pinMask = pinMask << 1;
+	}
+
+}
+/* USER CODE END 0 */
+
 /* USER CODE END 0 */
 
 int main(void)
@@ -97,12 +227,15 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  GPIOConfigurePin (GPIOA, GPIOPin0, GPIO_OUTPUT|GPIO_OPEN_DRAIN|GPIO_HI_SPEED|GPIO_NO_PULL);
+	  /*
 	  HAL_GPIO_WritePin(GPIOG, LED3_Pin, GPIO_PIN_RESET);
 	  HAL_GPIO_WritePin(GPIOG, LED4_Pin, GPIO_PIN_SET);
 	  HAL_Delay(250);
 	  HAL_GPIO_WritePin(GPIOG, LED3_Pin, GPIO_PIN_SET);
 	  HAL_GPIO_WritePin(GPIOG, LED4_Pin, GPIO_PIN_RESET);
 	  HAL_Delay(250);
+	  */
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
