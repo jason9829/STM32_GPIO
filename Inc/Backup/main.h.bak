@@ -46,6 +46,8 @@
 
 /* Private define ------------------------------------------------------------*/
 
+#define userButton_Pin GPIO_PIN_0
+#define userButton_GPIO_Port GPIOA
 #define LED3_Pin GPIO_PIN_13
 #define LED3_GPIO_Port GPIOG
 #define LED4_Pin GPIO_PIN_14

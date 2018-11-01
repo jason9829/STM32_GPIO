@@ -91,23 +91,23 @@ typedef enum{
 }	GpioPullType;
 
 typedef enum{
-	GpioPin0  = 0x0001,
-	GpioPin1  = 0x0002,
-	GpioPin2  = 0x0004,
-	GpioPin3  = 0x0008,
-	GpioPin4  = 0x0010,
-	GpioPin5  = 0x0020,
-	GpioPin6  = 0x0040,
-	GpioPin7  = 0x0080,
-	GpioPin8  = 0x0100,
-	GpioPin9  = 0x0200,
-	GpioPin10 = 0x0400,
-	GpioPin11 = 0x0800,
-	GpioPin12 = 0x1000,
-	GpioPin13 = 0x2000,
-	GpioPin14 = 0x4000,
-	GpioPin15 = 0x8000,
-}	GpioPin;
+	GPIOPin0  = 0x0001,
+	GPIOPin1  = 0x0002,
+	GPIOPin2  = 0x0004,
+	GPIOPin3  = 0x0008,
+	GPIOPin4  = 0x0010,
+	GPIOPin5  = 0x0020,
+	GPIOPin6  = 0x0040,
+	GPIOPin7  = 0x0080,
+	GPIOPin8  = 0x0100,
+	GPIOPin9  = 0x0200,
+	GPIOPin10 = 0x0400,
+	GPIOPin11 = 0x0800,
+	GPIOPin12 = 0x1000,
+	GPIOPin13 = 0x2000,
+	GPIOPin14 = 0x4000,
+	GPIOPin15 = 0x8000,
+}	GPIOPin;
 
 typedef volatile uint32_t IORegister ;
 
@@ -125,17 +125,17 @@ struct GPIORegs {
 	IORegister altFuncHi;
 };
 
-#define gpioA	((GPIORegs *)0x40020000)
-#define gpioB	((GPIORegs *)0x40020400)
-#define gpioC	((GPIORegs *)0x40020800)
-#define gpioD	((GPIORegs *)0x40020c00)
-#define gpioE	((GPIORegs *)0x40021000)
-#define gpioF	((GPIORegs *)0x40021400)
-#define gpioG	((GPIORegs *)0x40021800)
-#define gpioH	((GPIORegs *)0x40021c00)
-#define gpioI	((GPIORegs *)0x40022000)
-#define gpioJ	((GPIORegs *)0x40022400)
-#define gpioK	((GPIORegs *)0x40022800)
+#define GPIOA	((GPIORegs *)0x40020000)
+#define GPIOB	((GPIORegs *)0x40020400)
+#define GPIOC	((GPIORegs *)0x40020800)
+#define GPIOD	((GPIORegs *)0x40020c00)
+#define GPIOE	((GPIORegs *)0x40021000)
+#define GPIOF	((GPIORegs *)0x40021400)
+#define GPIOG	((GPIORegs *)0x40021800)
+#define GPIOH	((GPIORegs *)0x40021c00)
+#define GPIOI	((GPIORegs *)0x40022000)
+#define GPIOJ	((GPIORegs *)0x40022400)
+#define GPIOK	((GPIORegs *)0x40022800)
 
 /* *
  * To configure the GPIO pin.
@@ -156,7 +156,7 @@ struct GPIORegs {
  * 	 									   GPIO_NO_PULL);
  * */
 
-void GPIOConfigurePin(GPIORegs *port, GpioPin pins, int configuration){
+void GPIOConfigurePin(GPIORegs *port, GPIOPin pins, int configuration){
 	uint32_t i, pinMask, tempMask;
 	uint32_t mode;
 	uint32_t driver;
@@ -171,12 +171,12 @@ void GPIOConfigurePin(GPIORegs *port, GpioPin pins, int configuration){
 
 	for(i = 0; i <16 ; i++){
 		tempMask = pinMask & pins;
-		if(tempMask == i + 1){
+		if(tempMask == 1){
 			port->mode &= ~(3 << (i * 2));
 			port->mode |= mode << (i * 2);
 
-			port->driverType &= ~(1 << (i)) ;
-			port->driverType |= driver << (i);;
+			port->driverType &= ~(1 << (i * 1)) ;
+			port->driverType |= driver << (i * 1);;
 
 			port->outSpeed &= ~(3 << (i * 2));
 			port->outSpeed |= outSpeed  << (i * 2);
@@ -189,14 +189,8 @@ void GPIOConfigurePin(GPIORegs *port, GpioPin pins, int configuration){
 	}
 
 }
+/* USER CODE END 0 */
 
-
-void gpioWritePin(GPIORegs *port, GpioPin pins, int state){
-	if(state == 1){
-		port->outBits = pins;
-	}
-
-}
 /* USER CODE END 0 */
 
 int main(void)
@@ -209,7 +203,7 @@ int main(void)
   /* MCU Configuration----------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -233,8 +227,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  GPIOConfigurePin(gpioA, GpioPin0 | GpioPin1 , GPIO_OUTPUT|GPIO_OPEN_DRAIN|GPIO_HI_SPEED|GPIO_NO_PULL);
-	  GPIOConfigurePin(gpioG, GpioPin0 , GPIO_OUTPUT|GPIO_OPEN_DRAIN|GPIO_HI_SPEED|GPIO_NO_PULL);
+	  GPIOConfigurePin (GPIOA, GPIOPin0 | GPIOPin1, GPIO_OUTPUT|GPIO_OPEN_DRAIN|GPIO_HI_SPEED|GPIO_NO_PULL);
 	  /*
 	  HAL_GPIO_WritePin(GPIOG, LED3_Pin, GPIO_PIN_RESET);
 	  HAL_GPIO_WritePin(GPIOG, LED4_Pin, GPIO_PIN_SET);
